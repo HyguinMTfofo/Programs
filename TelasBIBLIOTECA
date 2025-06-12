@@ -1,0 +1,252 @@
+// Livro.java
+public class Livro {
+    private String titulo;
+    private String autor;
+
+    public Livro(String titulo, String autor) {
+        this.titulo = titulo;
+        this.autor = autor;
+    }
+
+    public String getTitulo() {
+        return titulo;
+    }
+
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
+    }
+
+    public String getAutor() {
+        return autor;
+    }
+
+    public void setAutor(String autor) {
+        this.autor = autor;
+    }
+
+    @Override
+    public String toString() {
+        return titulo + " - " + autor;
+    }
+}
+
+// TelaCadastro.java
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.ArrayList;
+
+public class TelaCadastro extends JFrame {
+    private JTextField tituloField;
+    private JTextField autorField;
+    private ArrayList<Livro> livros;
+
+    public TelaCadastro(ArrayList<Livro> livros) {
+        this.livros = livros;
+        setTitle("Cadastro de Livro");
+        setSize(300, 200);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+        JPanel panel = new JPanel(new GridLayout(3, 2));
+        tituloField = new JTextField();
+        autorField = new JTextField();
+
+        panel.add(new JLabel("Título:"));
+        panel.add(tituloField);
+        panel.add(new JLabel("Autor:"));
+        panel.add(autorField);
+
+        JButton cadastrarBtn = new JButton("Cadastrar");
+        JButton verListaBtn = new JButton("Ver Livros");
+
+        cadastrarBtn.addActionListener(e -> cadastrarLivro());
+        verListaBtn.addActionListener(e -> {
+            dispose();
+            new TelaListagem(livros);
+        });
+
+        panel.add(cadastrarBtn);
+        panel.add(verListaBtn);
+
+        add(panel);
+        setVisible(true);
+    }
+
+    private void cadastrarLivro() {
+        String titulo = tituloField.getText();
+        String autor = autorField.getText();
+        if (!titulo.isEmpty() && !autor.isEmpty()) {
+            livros.add(new Livro(titulo, autor));
+            tituloField.setText("");
+            autorField.setText("");
+            JOptionPane.showMessageDialog(this, "Livro cadastrado!");
+        }
+    }
+}
+
+// TelaListagem.java
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.ArrayList;
+
+public class TelaListagem extends JFrame {
+    private JList<Livro> list;
+    private DefaultListModel<Livro> model;
+    private ArrayList<Livro> livros;
+
+    public TelaListagem(ArrayList<Livro> livros) {
+        this.livros = livros;
+        setTitle("Lista de Livros");
+        setSize(400, 300);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+        model = new DefaultListModel<>();
+        for (Livro livro : livros) {
+            model.addElement(livro);
+        }
+
+        list = new JList<>(model);
+        JScrollPane scroll = new JScrollPane(list);
+
+        JButton editarBtn = new JButton("Editar");
+        JButton excluirBtn = new JButton("Detalhar/Excluir");
+        JButton voltarBtn = new JButton("Voltar");
+
+        editarBtn.addActionListener(e -> {
+            Livro selecionado = list.getSelectedValue();
+            if (selecionado != null) {
+                dispose();
+                new TelaEdicao(livros, selecionado);
+            }
+        });
+
+        excluirBtn.addActionListener(e -> {
+            Livro selecionado = list.getSelectedValue();
+            if (selecionado != null) {
+                dispose();
+                new TelaDetalhamento(livros, selecionado);
+            }
+        });
+
+        voltarBtn.addActionListener(e -> {
+            dispose();
+            new TelaCadastro(livros);
+        });
+
+        JPanel botoes = new JPanel();
+        botoes.add(editarBtn);
+        botoes.add(excluirBtn);
+        botoes.add(voltarBtn);
+
+        add(scroll, BorderLayout.CENTER);
+        add(botoes, BorderLayout.SOUTH);
+        setVisible(true);
+    }
+}
+
+// TelaEdicao.java
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.ArrayList;
+
+public class TelaEdicao extends JFrame {
+    private JTextField tituloField;
+    private JTextField autorField;
+    private Livro livro;
+    private ArrayList<Livro> livros;
+
+    public TelaEdicao(ArrayList<Livro> livros, Livro livro) {
+        this.livros = livros;
+        this.livro = livro;
+
+        setTitle("Editar Livro");
+        setSize(300, 200);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+        JPanel panel = new JPanel(new GridLayout(3, 2));
+        tituloField = new JTextField(livro.getTitulo());
+        autorField = new JTextField(livro.getAutor());
+
+        panel.add(new JLabel("Novo Título:"));
+        panel.add(tituloField);
+        panel.add(new JLabel("Novo Autor:"));
+        panel.add(autorField);
+
+        JButton salvarBtn = new JButton("Salvar");
+        JButton cancelarBtn = new JButton("Cancelar");
+
+        salvarBtn.addActionListener(e -> {
+            livro.setTitulo(tituloField.getText());
+            livro.setAutor(autorField.getText());
+            dispose();
+            new TelaListagem(livros);
+        });
+
+        cancelarBtn.addActionListener(e -> {
+            dispose();
+            new TelaListagem(livros);
+        });
+
+        panel.add(salvarBtn);
+        panel.add(cancelarBtn);
+
+        add(panel);
+        setVisible(true);
+    }
+}
+
+// TelaDetalhamento.java
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.ArrayList;
+
+public class TelaDetalhamento extends JFrame {
+    private Livro livro;
+    private ArrayList<Livro> livros;
+
+    public TelaDetalhamento(ArrayList<Livro> livros, Livro livro) {
+        this.livros = livros;
+        this.livro = livro;
+
+        setTitle("Detalhamento do Livro");
+        setSize(300, 150);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+        JPanel panel = new JPanel(new GridLayout(4, 1));
+        panel.add(new JLabel("Título: " + livro.getTitulo()));
+        panel.add(new JLabel("Autor: " + livro.getAutor()));
+
+        JButton excluirBtn = new JButton("Excluir");
+        JButton voltarBtn = new JButton("Voltar");
+
+        excluirBtn.addActionListener(e -> {
+            livros.remove(livro);
+            dispose();
+            new TelaListagem(livros);
+        });
+
+        voltarBtn.addActionListener(e -> {
+            dispose();
+            new TelaListagem(livros);
+        });
+
+        panel.add(excluirBtn);
+        panel.add(voltarBtn);
+
+        add(panel);
+        setVisible(true);
+    }
+}
+
+// Main.java
+import java.util.ArrayList;
+
+public class Main {
+    public static void main(String[] args) {
+        ArrayList<Livro> livros = new ArrayList<>();
+        new TelaCadastro(livros);
+    }
+}
